@@ -1,6 +1,6 @@
-type MessageGPT = {
+type Message = {
   role: "user" | "assistant" | "system";
   "content": string
 }
 
-export {MessageGPT};
+export {Message};

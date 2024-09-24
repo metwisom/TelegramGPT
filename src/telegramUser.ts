@@ -1,17 +1,17 @@
 import {Api, TelegramClient} from "telegram";
 import {StringSession} from "telegram/sessions";
-import {NewMessage} from "telegram/events";
-import {generateResponse} from "./openAi";
-import {Context} from "./context";
+import {NewMessage} from "telegram/events";1
 import promptSync from "prompt-sync";
+import {ResponseWorker} from "./iResponseWorker";
 
 
 const prompt = promptSync();
 
-const TelegramGPT = function (apiId: number, apiHash: string) {
-  let session = new StringSession("");
+const TelegramUser = function (apiId: number, apiHash: string, sessionKey: string = "") {
+  let session = new StringSession(sessionKey);
   let client: TelegramClient;
-  let context: Context;
+  let worker: ResponseWorker;
+  let target = 0;
   const setTyping = (message: Api.Message) => {
     client.invoke(
       new Api.messages.SetTyping({
@@ -40,7 +40,7 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
     ).then();
   };
   const sendAnswer = async (message: Api.Message, prompt: string, isAddon: boolean = false) => {
-    if (context.target !== message.senderId.valueOf()) {
+    if (target !== message.senderId.valueOf()) {
       return;
     }
 
@@ -52,29 +52,28 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
     setTyping(message);
     markRead(message);
 
-    const generatedResponse = await generateResponse(finalPrompt, context, isAddon);
+    const generatedResponse = await worker.getResponse(finalPrompt, isAddon);
 
     setTimeout(() => {
       client.sendMessage(message.peerId, {
         message: generatedResponse
       });
-
       if (Math.random() < 0.15) {
         sendAnswer(message, prompt, true);
       }
-
     }, generatedResponse.length * 100 + prompt.length * 40);
-
-
   };
   return Object.freeze({
-    async start(sessionKey: string = "") {
-      session = new StringSession(sessionKey);
+    setTarget(newTarget: number) {
+      target = newTarget;
+      return this;
+    },
+    async start() {
       client = new TelegramClient(session, apiId, apiHash, {connectionRetries: 5});
       await client.start({
         phoneNumber: async () => prompt("Введите ваш номер телефона: "),
         password: async () => prompt("Введите ваш пароль (если требуется): "),
-        phoneCode: async () => prompt("Введите код из Telegram: "),
+        phoneCode: async () => prompt("Введите код из TelegramUser: "),
         onError: (err) => console.log(err),
       });
       client.session.save();
@@ -82,11 +81,11 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
         sendAnswer(event.message, event.message.text).then();
       }, new NewMessage({}));
     },
-    addContext(newContext: Context) {
-      context = newContext;
+    setWorker(newWorker: ResponseWorker) {
+      worker = newWorker;
       return this;
     },
   });
 };
 
-export {TelegramGPT};
+export {TelegramUser};
