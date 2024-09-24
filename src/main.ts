@@ -12,6 +12,5 @@ const context = createContext(target);
 context.loadFromFile('output.json')
 
 TelegramGPT(apiId, apiHash)
-    .connect(tgToken).then(tg => {
-    tg.addContext(context).start()
-})
+    .addContext(context)
+    .start(tgToken)

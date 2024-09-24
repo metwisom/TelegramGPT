@@ -57,7 +57,7 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
                 message: generatedResponse
             });
 
-            if (Math.random() < 0.30) {
+            if (Math.random() < 0.15) {
                 sendAnswer(message, prompt, true)
             }
 
@@ -66,7 +66,7 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
 
     }
     return Object.freeze({
-        async connect(sessionKey: string = '') {
+        async start(sessionKey: string = '') {
             session = new StringSession(sessionKey)
             client = new TelegramClient(session, apiId, apiHash, {connectionRetries: 5});
             await client.start({
@@ -76,17 +76,14 @@ const TelegramGPT = function (apiId: number, apiHash: string) {
                 onError: (err) => console.log(err),
             });
             client.session.save();
-            return this
+            client.addEventHandler((event) => {
+                sendAnswer(event.message, event.message.text).then()
+            }, new NewMessage({}));
         },
         addContext(newContext: Context) {
             context = newContext
             return this
         },
-        start() {
-            client.addEventHandler((event) => {
-                sendAnswer(event.message, event.message.text).then()
-            }, new NewMessage({}));
-        }
     })
 }
 
