@@ -1,14 +1,11 @@
 import axios from "axios";
 import {ResponseWorker} from "../iResponseWorker";
 import {createContext} from "./context";
-import process from "node:process";
+import {config} from "../../config";
 
 
 const openAiWorker = (): ResponseWorker => {
-  const openaiApiKey = process.env.OPEN_API_TOKEN;
-  if (!openaiApiKey) {
-    throw new Error("OPEN_API_TOKEN не задан");
-  }
+  const openaiApiKey = config.openaiApiKey;
   let context: Awaited<ReturnType<typeof createContext>>;
   try {
     context = createContext().loadFromFile("output.json");

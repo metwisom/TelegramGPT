@@ -3,25 +3,17 @@ import {StringSession} from "telegram/sessions";
 import {NewMessage} from "telegram/events";
 import promptSync from "prompt-sync";
 import {ResponseWorker} from "../worker/iResponseWorker";
-import process from "node:process";
+import {config} from "../config";
 
 
 const prompt = promptSync();
 
 const TelegramByUser = function () {
-  const apiId = Number(process.env.APP_ID);
-  let target = Number(process.env.TARGET);
-  if (Number.isNaN(apiId) || Number.isNaN(target)) {
-    throw new Error('APP_ID и TARGET должны быть числами');
-  }
-
-  const apiHash = process.env.API_HASH;
-  const sessionKey = process.env.TG_TOKEN;
-  if (Number.isNaN(apiHash) || Number.isNaN(sessionKey)) {
-    throw new Error('API_HASH и TG_TOKEN должны быть строками');
-  }
-
-  let session = new StringSession(sessionKey);
+  const apiId = config.apiId;
+  let target = config.target;
+  const apiHash = config.apiHash;
+  const tgToken = config.tgToken;
+  const session = new StringSession(tgToken);
   let client: TelegramClient;
   let worker: ResponseWorker;
 
