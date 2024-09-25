@@ -1,17 +1,30 @@
 import {Api, TelegramClient} from "telegram";
 import {StringSession} from "telegram/sessions";
-import {NewMessage} from "telegram/events";1
+import {NewMessage} from "telegram/events";
 import promptSync from "prompt-sync";
-import {ResponseWorker} from "./iResponseWorker";
+import {ResponseWorker} from "../worker/iResponseWorker";
+import process from "node:process";
 
 
 const prompt = promptSync();
 
-const TelegramUser = function (apiId: number, apiHash: string, sessionKey: string = "") {
+const TelegramByUser = function () {
+  const apiId = Number(process.env.APP_ID);
+  let target = Number(process.env.TARGET);
+  if (Number.isNaN(apiId) || Number.isNaN(target)) {
+    throw new Error('APP_ID и TARGET должны быть числами');
+  }
+
+  const apiHash = process.env.API_HASH;
+  const sessionKey = process.env.TG_TOKEN;
+  if (Number.isNaN(apiHash) || Number.isNaN(sessionKey)) {
+    throw new Error('API_HASH и TG_TOKEN должны быть строками');
+  }
+
   let session = new StringSession(sessionKey);
   let client: TelegramClient;
   let worker: ResponseWorker;
-  let target = 0;
+
   const setTyping = (message: Api.Message) => {
     client.invoke(
       new Api.messages.SetTyping({
@@ -21,6 +34,7 @@ const TelegramUser = function (apiId: number, apiHash: string, sessionKey: strin
       })
     ).then();
   };
+
   const markRead = (message: Api.Message) => {
     let chatId: number = 0;
     if (message.isGroup) {
@@ -39,33 +53,30 @@ const TelegramUser = function (apiId: number, apiHash: string, sessionKey: strin
       })
     ).then();
   };
-  const sendAnswer = async (message: Api.Message, prompt: string, isAddon: boolean = false) => {
+
+  const sendAnswer = async (message: Api.Message, prompt: string) => {
     if (target !== message.senderId.valueOf()) {
       return;
     }
 
-    let finalPrompt = prompt;
-    if (isAddon) {
-      finalPrompt = "Учтя свой предыдущий ответ, продолжи развивать тему дальше, расшевели диалог";
-    }
+    const sendMessage = (generatedMessage: string) => {
+      setTyping(message);
+      markRead(message);
+      setTimeout(() => {
+        client.sendMessage(message.peerId, {
+          message: generatedMessage
+        });
+      }, generatedMessage.length * 100 + prompt.length * 40);
+    };
 
-    setTyping(message);
-    markRead(message);
 
-    const generatedResponse = await worker.getResponse(finalPrompt, isAddon);
+    await worker.generateResponse(prompt, sendMessage);
 
-    setTimeout(() => {
-      client.sendMessage(message.peerId, {
-        message: generatedResponse
-      });
-      if (Math.random() < 0.15) {
-        sendAnswer(message, prompt, true);
-      }
-    }, generatedResponse.length * 100 + prompt.length * 40);
+
   };
   return Object.freeze({
-    setTarget(newTarget: number) {
-      target = newTarget;
+    setWorker(newWorker: ResponseWorker) {
+      worker = newWorker;
       return this;
     },
     async start() {
@@ -73,7 +84,7 @@ const TelegramUser = function (apiId: number, apiHash: string, sessionKey: strin
       await client.start({
         phoneNumber: async () => prompt("Введите ваш номер телефона: "),
         password: async () => prompt("Введите ваш пароль (если требуется): "),
-        phoneCode: async () => prompt("Введите код из TelegramUser: "),
+        phoneCode: async () => prompt("Введите код из TelegramByUser: "),
         onError: (err) => console.log(err),
       });
       client.session.save();
@@ -81,11 +92,7 @@ const TelegramUser = function (apiId: number, apiHash: string, sessionKey: strin
         sendAnswer(event.message, event.message.text).then();
       }, new NewMessage({}));
     },
-    setWorker(newWorker: ResponseWorker) {
-      worker = newWorker;
-      return this;
-    },
   });
 };
 
-export {TelegramUser};
+export {TelegramByUser};

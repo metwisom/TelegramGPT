@@ -1,9 +1,8 @@
 import fs from "node:fs";
 import {Message} from "./iMessage";
-import {Context} from "./iContext";
 
 
-const createContext = (): Readonly<Context> => {
+const createContext = () => {
   const messageHistory: Message[] = [];
   return Object.freeze({
     loadFromFile(fileName: string) {

@@ -1,9 +1,20 @@
 import axios from "axios";
 import {ResponseWorker} from "../iResponseWorker";
-import {Context} from "./iContext";
+import {createContext} from "./context";
+import process from "node:process";
 
 
-const openAiWorker = (openaiApiKey: string, context: Context): ResponseWorker => {
+const openAiWorker = (): ResponseWorker => {
+  const openaiApiKey = process.env.OPEN_API_TOKEN;
+  if (!openaiApiKey) {
+    throw new Error("OPEN_API_TOKEN не задан");
+  }
+  let context: Awaited<ReturnType<typeof createContext>>;
+  try {
+    context = createContext().loadFromFile("output.json");
+  } catch (error) {
+    throw new Error(`Ошибка при загрузке контекста: ${error.toString()}`);
+  }
   const headers = {
     "Authorization": `Bearer ${openaiApiKey}`,
     "Content-Type": "application/json",
@@ -40,7 +51,7 @@ const openAiWorker = (openaiApiKey: string, context: Context): ResponseWorker =>
   };
 
   return Object.freeze({
-    async getResponse(prompt: string, asService: boolean = false) {
+    async generateResponse(prompt: string, callback: (generatedMessage: string) => void, asService: boolean = false) {
       try {
         const httpResponse = await axios.post(
           "https://api.openai.com/v1/chat/completions",
@@ -57,10 +68,14 @@ const openAiWorker = (openaiApiKey: string, context: Context): ResponseWorker =>
         openAiContext
           .add([{role: asService ? "system" : "user", content: prompt}])
           .add([{role: "assistant", content: answer}]);
-        return answer;
+
+        callback(answer);
+        if (Math.random() < 0.15) {
+          this.getResponse("Учтя свой предыдущий ответ, продолжи развивать тему дальше, расшевели диалог", callback, true);
+        }
       } catch (error) {
         console.error("Ошибка при запросе к OpenAI API:", error);
-        return "";
+        return;
       }
     }
   });
