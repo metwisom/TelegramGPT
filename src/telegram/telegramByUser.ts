@@ -23,9 +23,9 @@ const TelegramByUser = function () {
 
 
   const sendAnswer = async (message: Api.Message, prompt: string) => {
-    if (!message.isPrivate) {
-      return;
-    }
+    // if (!message.isPrivate) {
+    //   return;
+    // }
 
     const actions = {
       sendImage: async (path: string) => {
