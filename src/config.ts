@@ -20,6 +20,3 @@ if (!config.apiHash) {
 if (Number.isNaN(config.target)) {
   throw new Error("TARGET должен быть числом");
 }
-if (!config.tgToken) {
-  throw new Error("TG_TOKEN не задан");
-}

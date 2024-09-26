@@ -23,7 +23,7 @@ const TelegramByUser = function () {
 
 
   const sendAnswer = async (message: Api.Message, prompt: string) => {
-    if (target !== message.senderId.valueOf()) {
+    if (!message.isPrivate) {
       return;
     }
 
@@ -127,7 +127,7 @@ const TelegramByUser = function () {
         phoneCode: async () => prompt("Введите код из TelegramByUser: "),
         onError: (err) => console.log(err),
       });
-      client.session.save();
+      console.log(client.session.save());
       client.addEventHandler((event) => {
         sendAnswer(event.message, event.message.text).then();
       }, new NewMessage({}));
