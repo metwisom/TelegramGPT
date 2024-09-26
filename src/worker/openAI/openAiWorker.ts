@@ -105,7 +105,12 @@ const openAiWorker = (): ResponseWorker => {
           ) {
             actions.sendEmoji(answer);
           } else {
-            actions.sendMessage(answer);
+            if(answer != '-пропуск-'){
+              actions.sendMessage(answer);
+              if (Math.random() < 0.15) {
+                this.generateResponse("Учтя свой предыдущий ответ, продолжи развивать тему дальше, расшевели диалог", actions, true);
+              }
+            }
           }
         } else {
           let httpResponse = await axios.post(
@@ -126,9 +131,7 @@ const openAiWorker = (): ResponseWorker => {
         }
 
 
-        if (Math.random() < 0.15) {
-          this.generateResponse("Учтя свой предыдущий ответ, продолжи развивать тему дальше, расшевели диалог", actions, true);
-        }
+
       } catch (error) {
         console.error("Ошибка при запросе к OpenAI API:", error);
         return;
