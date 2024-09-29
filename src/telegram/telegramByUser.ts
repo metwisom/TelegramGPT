@@ -14,7 +14,6 @@ const prompt = promptSync();
 
 const TelegramByUser = function () {
   const apiId = config.apiId;
-  let target = config.target;
   const apiHash = config.apiHash;
   const tgToken = config.tgToken;
   const session = new StringSession(tgToken);
@@ -38,7 +37,7 @@ const TelegramByUser = function () {
 
             fileStream.on('finish', async() => {
               fileStream.close();
-              client.invoke(
+              await client.invoke(
                 new Api.messages.SendMedia({
                   peer: Number(message.chatId),
                   media: new Api.InputMediaUploadedPhoto({
