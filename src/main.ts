@@ -1,8 +1,8 @@
 import {TelegramByUser} from "./telegram/telegramByUser";
-import {openAiWorker} from "./worker/openAI/openAiWorker";
+import {openAi} from "./worker/openAI/openAi";
 
 
-const worker = openAiWorker();
+const worker = openAi();
 
 TelegramByUser()
   .setWorker(worker)
