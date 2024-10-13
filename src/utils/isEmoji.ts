@@ -1,6 +1,6 @@
 const isEmoji = (codePoint: number) => (codePoint >= 0x2600 && codePoint <= 0x26FF) ||   // Символы разное
   (codePoint >= 0x2700 && codePoint <= 0x27BF) ||   // Символы разное (продолжение)
-  (codePoint >= 0x1F600 && codePoint <= 0x1F64F) || // Эмоджи лиц
+  (codePoint >= 0x1F600 && codePoint <= 0x1F64F) || // Лица
   (codePoint >= 0x1F300 && codePoint <= 0x1F5FF) || // Символы и пиктограммы
   (codePoint >= 0x1F680 && codePoint <= 0x1F6FF) || // Транспорт и карты
   (codePoint >= 0x1F700 && codePoint <= 0x1F77F) ||   // Астрологические символы
