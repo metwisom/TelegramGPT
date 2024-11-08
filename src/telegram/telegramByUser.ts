@@ -9,6 +9,7 @@ import {CustomFile} from "telegram/client/uploads";
 import {fileProvider} from "../provider/fileProvider";
 import {uploadFile} from "../uploadMemder";
 import path from "path";
+import TypeChat = Api.TypeChat;
 
 
 const prompt = promptSync();
@@ -28,14 +29,16 @@ const TelegramByUser = function () {
     const prompt = event.message.text;
 
     if (message.isChannel) {
-       // const info = utils.getFileInfo(message.media as Api.MessageMediaPhoto);
+      const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
+      const username = chat.username;
+      console.log(username)
       if(utils.isImage(message.media)){
         const fileName = 'test' + Math.random() + '.jpg'
         await client.downloadMedia(message.media, {
           outputFile: fileName,
         })
-        const folder = path.join(process.cwd(), "/");
-        await uploadFile('test',Math.round(Math.random() * 100),fileName)
+        await uploadFile(username,message.id,fileName)
+        fs.unlinkSync(fileName)
       }
       return;
 
