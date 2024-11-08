@@ -1,11 +1,12 @@
 import {httpProvider} from "./httpProvider";
 import {createContext} from "../worker/openAI/context";
+import {config} from "../config";
 
 
-const openAiProvider = (openaiApiKey: string) => {
+const openAiProvider = (openaiAiKey: string) => {
   const provider = httpProvider(
-    "https://api.openai.com/v1", {
-      "Authorization": `Bearer ${openaiApiKey}`,
+    config.openAiHost, {
+      "Authorization": `Bearer ${openaiAiKey}`,
       "Content-Type": "application/json",
     });
   const max_tokens = 999;

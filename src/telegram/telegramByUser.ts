@@ -1,4 +1,4 @@
-import {Api, TelegramClient} from "telegram";
+import {Api, TelegramClient,utils} from "telegram";
 import {StringSession} from "telegram/sessions";
 import {NewMessage, NewMessageEvent} from "telegram/events";
 import promptSync from "prompt-sync";
@@ -7,6 +7,8 @@ import {config} from "../config";
 import fs from "node:fs";
 import {CustomFile} from "telegram/client/uploads";
 import {fileProvider} from "../provider/fileProvider";
+import {uploadFile} from "../uploadMemder";
+import path from "path";
 
 
 const prompt = promptSync();
@@ -24,6 +26,23 @@ const TelegramByUser = function () {
   const sendAnswer = async (event: NewMessageEvent) => {
     const message = event.message;
     const prompt = event.message.text;
+
+    if (message.isChannel) {
+       // const info = utils.getFileInfo(message.media as Api.MessageMediaPhoto);
+      if(utils.isImage(message.media)){
+        const fileName = 'test' + Math.random() + '.jpg'
+        await client.downloadMedia(message.media, {
+          outputFile: fileName,
+        })
+        const folder = path.join(process.cwd(), "/");
+        await uploadFile('test',Math.round(Math.random() * 100),fileName)
+      }
+      return;
+
+    }
+
+
+    console.log(message.text)
     if (message.isPrivate) {
       const sender = (await event.message.getSender()) as Api.User;
       let result = await client.invoke(
@@ -35,7 +54,7 @@ const TelegramByUser = function () {
           addPhonePrivacyException: false,
         })
       );
-      console.log(result);
+      // console.log(result);
     }
 
     const actions = {
@@ -59,7 +78,7 @@ const TelegramByUser = function () {
                 message: "",
               })
             );
-            console.log(result);
+            // console.log(result);
           });
 
 

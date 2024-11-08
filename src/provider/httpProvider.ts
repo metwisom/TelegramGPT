@@ -15,7 +15,7 @@ const httpProvider = (host: string, defaultHeader: Record<string, any> = {}) => 
         }
       })
       .then(response => {
-        console.log(response);
+        // console.log(response);
         return response.data;
       })
       .catch(error => error.response.data)

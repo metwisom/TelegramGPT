@@ -7,15 +7,11 @@ import {isImageRequest} from "./isImageRequest";
 import {openAiProvider} from "../../provider/openAiProvider";
 
 
-function openAiWorker(openaiApiKey: string): ResponseWorker {
+function openAiWorker(openaiAiKey: string): ResponseWorker {
   let openAiContext: ReturnType<typeof createContext>;
-  try {
-    openAiContext = createContext().loadFromFile("output.json");
-  } catch (error) {
-    throw new Error(`Ошибка при загрузке контекста: ${error.toString()}`);
-  }
+  openAiContext = createContext().loadFromFile("output.json");
 
-  const aiProvider = openAiProvider(openaiApiKey);
+  const aiProvider = openAiProvider(openaiAiKey);
 
 
   const generateChatResponse = async (prompt: string, actions: Actions, asService: boolean = false) => {
