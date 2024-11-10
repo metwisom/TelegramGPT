@@ -37,7 +37,7 @@ const TelegramByUser = function () {
         await client.downloadMedia(message.media, {
           outputFile: fileName,
         })
-        await uploadFile(username,message.id,fileName)
+        await uploadFile(username,message.id,Number(chat.id),fileName)
         fs.unlinkSync(fileName)
       }
       return;

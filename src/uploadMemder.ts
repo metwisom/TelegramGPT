@@ -3,12 +3,13 @@ import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 
-async function uploadFile(source:string,number:number,filePath:string) {
+async function uploadFile(source:string,number:number,source_id:number,filePath:string) {
   const form = new FormData();
 
   // Добавляем поля формы
   form.append('source', source);
   form.append('number', number);
+  form.append('source_id', source_id);
 
   // Добавляем файл
   form.append('file', fs.createReadStream(filePath), path.basename(filePath));
