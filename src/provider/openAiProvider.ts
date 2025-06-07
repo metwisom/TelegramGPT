@@ -32,7 +32,7 @@ const openAiProvider = (openaiAiKey: string) => {
           "model": "dall-e-3",
           "prompt": prompt + "",
           "n": 1,
-          "size": "512x512"
+          "size": "1024x1024"
         }
       );
       if (httpResponse.error !== undefined) {
