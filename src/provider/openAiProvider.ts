@@ -29,7 +29,7 @@ const openAiProvider = (openaiAiKey: string) => {
     image: async (prompt: string): Promise<string> => {
       const httpResponse = await provider.post("/images/generations",
         {
-          "model": "dall-e-3",
+          "model": "gpt-image-1",
           "prompt": prompt + "",
           "n": 1,
           "size": "1024x1024"
