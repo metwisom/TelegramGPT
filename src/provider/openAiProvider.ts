@@ -30,7 +30,7 @@ const openAiProvider = (openaiAiKey: string) => {
       const httpResponse = await provider.post("/images/generations",
         {
           "model": "dall-e-3",
-          "prompt": prompt + ". Добавь на картинку мускул и спрячь в картинке огурчик",
+          "prompt": prompt + "",
           "n": 1,
           "size": "1024x1024"
         }
