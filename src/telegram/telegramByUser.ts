@@ -1,4 +1,4 @@
-import {Api, TelegramClient,utils} from "telegram";
+import {Api, TelegramClient, utils} from "telegram";
 import {StringSession} from "telegram/sessions";
 import {NewMessage, NewMessageEvent} from "telegram/events";
 import promptSync from "prompt-sync";
@@ -10,6 +10,7 @@ import {fileProvider} from "../provider/fileProvider";
 import {uploadFile} from "../uploadMemder";
 import path from "path";
 import TypeChat = Api.TypeChat;
+
 
 const prompt = promptSync();
 
@@ -30,21 +31,22 @@ const TelegramByUser = function () {
     if (message.isChannel) {
       const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
       const username = chat.username;
-      console.log(username)
-      if(message.media && utils.isImage(message.media)){
-        const fileName = 'test' + Math.random() + '.jpg'
+      console.log(username);
+      if (message.media && utils.isImage(message.media)) {
+        const fileName = "test" + Math.random() + ".jpg";
         await client.downloadMedia(message.media, {
           outputFile: fileName,
-        })
-        await uploadFile(username,message.id,Number(chat.id),fileName)
-        fs.unlinkSync(fileName)
+        });
+        await uploadFile(username, message.id, Number(chat.id), fileName);
+        fs.unlinkSync(fileName);
       }
-
-      //return;
+      if (username != null) {
+        return;
+      }
     }
 
 
-    console.log(message.text)
+    console.log(message.text);
     if (message.isPrivate) {
       const sender = (await event.message.getSender()) as Api.User;
       let result = await client.invoke(
