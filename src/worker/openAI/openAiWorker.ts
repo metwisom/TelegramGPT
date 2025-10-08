@@ -4,6 +4,7 @@ import {Actions} from "../../telegram/iActions";
 import {isEmoji} from "../../utils/isEmoji";
 import {generateImageResponse} from "./generateImageResponse";
 import {isImageRequest} from "./isImageRequest";
+import {isBotRequest} from "./isBotRequest";
 import {openAiProvider} from "../../provider/openAiProvider";
 
 
@@ -42,7 +43,7 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
       actions.markRead();
       if (await isImageRequest(prompt, aiProvider)) {
         await generateImageResponse(prompt, actions, aiProvider);
-      } else {
+      } else if (await isBotRequest(prompt, aiProvider)) {
         await generateChatResponse(prompt, actions, asService);
       }
     }

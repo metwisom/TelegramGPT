@@ -16,7 +16,7 @@ const openAiProvider = (openaiAiKey: string) => {
     chat: async (prompt: string, openAiContext: ReturnType<typeof createContext> = undefined, asService: boolean = false): Promise<string> => {
       const httpResponse = await provider.post("/chat/completions",
         {
-          model,
+//          model,
           messages: openAiContext === undefined ? [{
             "role": "user",
             "content": prompt

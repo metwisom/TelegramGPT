@@ -11,7 +11,6 @@ import {uploadFile} from "../uploadMemder";
 import path from "path";
 import TypeChat = Api.TypeChat;
 
-
 const prompt = promptSync();
 
 
@@ -32,7 +31,7 @@ const TelegramByUser = function () {
       const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
       const username = chat.username;
       console.log(username)
-      if(utils.isImage(message.media)){
+      if(message.media && utils.isImage(message.media)){
         const fileName = 'test' + Math.random() + '.jpg'
         await client.downloadMedia(message.media, {
           outputFile: fileName,
@@ -40,8 +39,8 @@ const TelegramByUser = function () {
         await uploadFile(username,message.id,Number(chat.id),fileName)
         fs.unlinkSync(fileName)
       }
-      return;
 
+      //return;
     }
 
 
