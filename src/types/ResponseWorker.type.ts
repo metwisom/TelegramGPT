@@ -1,4 +1,4 @@
-import {Actions} from "../telegram/iActions";
+import {Actions} from "./Actions.type";
 
 
 type ResponseWorker = {

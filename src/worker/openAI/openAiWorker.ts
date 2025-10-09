@@ -1,18 +1,19 @@
-import {ResponseWorker} from "../iResponseWorker";
+import {ResponseWorker} from "../../types/ResponseWorker.type";
 import {createContext} from "./context";
-import {Actions} from "../../telegram/iActions";
+import {Actions} from "../../types/Actions.type";
 import {isEmoji} from "../../utils/isEmoji";
 import {generateImageResponse} from "./generateImageResponse";
 import {isImageRequest} from "./isImageRequest";
 import {isBotRequest} from "./isBotRequest";
 import {openAiProvider} from "../../provider/openAiProvider";
+import {config} from "../../config";
 
 
 function openAiWorker(openaiAiKey: string): ResponseWorker {
   let openAiContext: ReturnType<typeof createContext>;
   openAiContext = createContext().loadFromFile("output.json");
 
-  const aiProvider = openAiProvider(openaiAiKey);
+  const aiProvider = openAiProvider(config.openAiHost ?? '', openaiAiKey);
 
 
   const generateChatResponse = async (prompt: string, actions: Actions, asService: boolean = false) => {
@@ -43,8 +44,10 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
       actions.markRead();
       if (await isImageRequest(prompt, aiProvider)) {
         await generateImageResponse(prompt, actions, aiProvider);
-      } else if (await isBotRequest(prompt, aiProvider)) {
-        await generateChatResponse(prompt, actions, asService);
+      } else {
+        if (await isBotRequest(prompt, aiProvider)) {
+          await generateChatResponse(prompt, actions, asService);
+        }
       }
     }
   });

@@ -2,32 +2,49 @@ import fetch from 'node-fetch';
 import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
+import {config} from './config';
 
-async function uploadFile(source:string,number:number,source_id:number,filePath:string) {
+type UploadResult = {
+  success: boolean;
+  data?: any;
+  error?: string;
+};
+
+async function uploadFile(source: string, number: number, source_id: number, filePath: string): Promise<UploadResult> {
+  const host = config.memderHost;
+  const uploadPath = config.memderUploadPath ?? '/api/upload';
+
+  if (!host) {
+    return {success: false, error: 'MEMDER_HOST is not configured'};
+  }
+
+  const url = `${host.replace(/\/$/, '')}${uploadPath}`;
+
   const form = new FormData();
-
-  // Добавляем поля формы
   form.append('source', source);
-  form.append('number', number);
-  form.append('source_id', source_id);
-
-  // Добавляем файл
+  form.append('number', String(number));
+  form.append('source_id', String(source_id));
   form.append('file', fs.createReadStream(filePath), path.basename(filePath));
 
-  // Отправка POST запроса
-  const response = await fetch('https://memder.metwisom.ru/api/upload', {
-    method: 'POST',
-    body: form,
-    headers: form.getHeaders(), // Устанавливаем правильные заголовки для multipart/form-data
-  });
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: form,
+      headers: form.getHeaders(),
+    } as any);
 
-  // Проверка на успешный ответ
-  if (response.ok) {
-    const responseBody = await response.json();
-    console.log('Ответ от сервера:', responseBody);
-  } else {
-    console.log('Ошибка при загрузке файла:', response.statusText);
+    if (response.ok) {
+      const responseBody = await response.json();
+      console.log('Upload response:', responseBody);
+      return {success: true, data: responseBody};
+    }
+    const text = await response.text();
+    console.error('Upload failed:', response.status, text);
+    return {success: false, error: text};
+  } catch (err) {
+    console.error('Upload error:', err);
+    return {success: false, error: (err as Error).message};
   }
 }
 
-export {uploadFile}
+export {uploadFile};
