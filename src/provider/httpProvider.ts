@@ -1,25 +1,26 @@
-import axios from "axios";
-
+import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
 
 const httpProvider = (host: string, defaultHeader: Record<string, any> = {}) => {
-  const mainHost = host;
-  const defaultHeaders = defaultHeader;
-  return Object.freeze({
-    post: (path: string, data: Record<string, any> = {}, header: Record<string, any> = {}) => axios.post(
-      mainHost + path,
-      data,
-      {
-        headers: {
-          ...defaultHeaders,
-          ...header
-        }
-      })
-      .then(response => {
-        // console.log(response);
-        return response.data;
-      })
-      .catch(error => error.response.data)
+  const client: AxiosInstance = axios.create({
+    baseURL: host,
+    headers: {
+      ...defaultHeader,
+    },
+    timeout: 30_000,
   });
+
+  const post = async (path: string, data: Record<string, any> = {}, header: Record<string, any> = {}) => {
+    const config: AxiosRequestConfig = {headers: {...defaultHeader, ...header}};
+    try {
+      const res = await client.post(path, data, config);
+      return res.data;
+    } catch (err: any) {
+      if (err.response) return err.response.data;
+      throw err;
+    }
+  };
+
+  return Object.freeze({post});
 };
 
 export {httpProvider};

@@ -8,8 +8,6 @@ import fs from "node:fs";
 import {CustomFile} from "telegram/client/uploads";
 import {fileProvider} from "../provider/fileProvider";
 import {uploadFile} from "../uploadMemder";
-import path from "path";
-import TypeChat = Api.TypeChat;
 
 
 const prompt = promptSync();

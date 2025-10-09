@@ -1,29 +1,42 @@
-import * as process from "node:process";
+import * as process from 'node:process';
 
-
-const config = {
-  openaiAiKey: process.env.OPEN_AI_TOKEN,
-  openAiHost: process.env.OPEN_AI_HOST,
-  apiId: Number(process.env.APP_ID),
-  apiHash: process.env.API_HASH,
-  target: Number(process.env.TARGET),
-  tgToken: process.env.TG_TOKEN,
+type Config = {
+  openaiAiKey: string | undefined;
+  openAiHost: string | undefined;
+  apiId: number;
+  apiHash: string | undefined;
+  target: number;
+  tgToken: string | undefined;
+  memderHost?: string | undefined;
+  memderUploadPath?: string | undefined;
 };
 
-export {config};
+const config: Config = {
+  openaiAiKey: process.env.OPEN_AI_TOKEN,
+  openAiHost: process.env.OPEN_AI_HOST,
+  apiId: Number(process.env.APP_ID ?? NaN),
+  apiHash: process.env.API_HASH,
+  target: Number(process.env.TARGET ?? NaN),
+  tgToken: process.env.TG_TOKEN,
+  memderHost: process.env.MEMDER_HOST,
+  memderUploadPath: process.env.MEMDER_UPLOAD_PATH ?? '/api/upload',
+};
+if (process.env.NODE_ENV !== 'test') {
+  if (!config.openaiAiKey) {
+    throw new Error('Environment variable OPEN_AI_TOKEN is required');
+  }
+  if (!config.openAiHost) {
+    throw new Error('Environment variable OPEN_AI_HOST is required');
+  }
+  if (Number.isNaN(config.apiId)) {
+    throw new Error('Environment variable APP_ID must be a number');
+  }
+  if (!config.apiHash) {
+    throw new Error('Environment variable API_HASH is required');
+  }
+  if (Number.isNaN(config.target)) {
+    throw new Error('Environment variable TARGET must be a number');
+  }
+}
 
-if (!config.openaiAiKey) {
-  throw new Error("OPEN_API_TOKEN не задан");
-}
-if (!config.openAiHost) {
-  throw new Error("OPEN_API_HOST не задан");
-}
-if (Number.isNaN(config.apiId)) {
-  throw new Error("APP_ID должен быть числом");
-}
-if (!config.apiHash) {
-  throw new Error("API_HASH не задан");
-}
-if (Number.isNaN(config.target)) {
-  throw new Error("TARGET должен быть числом");
-}
+export {config, type Config};
