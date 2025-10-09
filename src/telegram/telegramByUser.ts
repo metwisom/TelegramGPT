@@ -2,7 +2,7 @@ import {Api, TelegramClient, utils} from "telegram";
 import {StringSession} from "telegram/sessions";
 import {NewMessage, NewMessageEvent} from "telegram/events";
 import promptSync from "prompt-sync";
-import {ResponseWorker} from "../worker/iResponseWorker";
+import {ResponseWorker} from "../types/ResponseWorker.type";
 import {config} from "../config";
 import fs from "node:fs";
 import {CustomFile} from "telegram/client/uploads";

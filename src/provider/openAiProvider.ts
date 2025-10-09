@@ -1,6 +1,6 @@
 import {httpProvider} from './httpProvider';
 import {createContext} from '../worker/openAI/context';
-import type {Message} from '../worker/openAI/iMessage';
+import type {Message} from '../types/Message.type';
 
 type OpenAIProvider = {
   chat: (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService?: boolean) => Promise<string>;
@@ -13,7 +13,7 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
     'Content-Type': 'application/json',
   });
 
-  const max_tokens = 999;
+  const max_tokens = 9999;
 
   const chat = async (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService = false) => {
     const body: Record<string, any> = {

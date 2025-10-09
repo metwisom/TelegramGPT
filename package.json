@@ -6,7 +6,7 @@
     "build": "tsc -p tsconfig.json",
   "lint": "eslint --ext .ts src",
   "format": "prettier --write \"src/**/*.ts\"",
-    "start": "node --enable-source-maps dist/main.js",
+    "start": "node --env-file=.env --enable-source-maps dist/main.js",
     "dev": "ts-node-esm src/main.ts"
   },
   "devDependencies": {

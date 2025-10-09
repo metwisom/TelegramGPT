@@ -1,4 +1,4 @@
-import {Actions} from "../../telegram/iActions";
+import {Actions} from "../../types/Actions.type";
 import {openAiProvider} from "../../provider/openAiProvider";
 
 
