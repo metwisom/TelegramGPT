@@ -9,6 +9,7 @@ type Config = {
   tgToken: string | undefined;
   memderHost?: string | undefined;
   memderUploadPath?: string | undefined;
+  temperature?: number;
 };
 
 const config: Config = {
@@ -20,6 +21,7 @@ const config: Config = {
   tgToken: process.env.TG_TOKEN,
   memderHost: process.env.MEMDER_HOST,
   memderUploadPath: process.env.MEMDER_UPLOAD_PATH ?? '/api/upload',
+  temperature: process.env.TEMPERATURE ? Number(process.env.TEMPERATURE) : 0.7,
 };
 if (process.env.NODE_ENV !== 'test') {
   if (!config.openaiAiKey) {

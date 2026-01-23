@@ -26,6 +26,28 @@ const TelegramByUser = function () {
     const message = event.message;
     const prompt = event.message.text;
 
+    // Check if bot should force respond
+    let forceRespond = false;
+    
+    // Check if message contains @genadebich ping
+    if (prompt && prompt.includes('@genadebich')) {
+      forceRespond = true;
+      console.log('Message contains @genadebich, forcing response');
+    }
+    
+    // Check if message is a reply to bot's message
+    if (message.replyTo && !forceRespond) {
+      try {
+        const repliedMessage = await message.getReplyMessage();
+        if (repliedMessage && repliedMessage.out === true) {
+          forceRespond = true;
+          console.log('Message is a reply to bot, forcing response');
+        }
+      } catch (err) {
+        console.error('Error checking reply message:', err);
+      }
+    }
+
     if (message.isChannel) {
       const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
       const username = chat.username;
@@ -88,11 +110,31 @@ const TelegramByUser = function () {
       sendEmoji: (emoji: string) => {
         client.invoke(
           new Api.messages.SendReaction({
-            peer: Number(message.chatId),
-            msgId: Number(message.id),
+            peer: message.peerId,
+            msgId: message.id,
             reaction: [new Api.ReactionEmoji({emoticon: emoji})],
           })
-        );
+        ).catch(err => {
+          console.error('Error sending emoji:', err);
+        });
+      },
+      sendReactions: (emojis: string[]) => {
+        if (emojis.length === 0) return;
+        try {
+          const reactions = emojis.map(emoji => new Api.ReactionEmoji({emoticon: emoji}));
+          console.log('Sending reactions:', JSON.stringify(reactions), 'to peer:', message.peerId, 'msgId:', message.id);
+          client.invoke(
+            new Api.messages.SendReaction({
+              peer: message.peerId,
+              msgId: message.id,
+              reaction: reactions,
+            })
+          ).catch(err => {
+            console.error('Error sending reactions:', err);
+          });
+        } catch (err) {
+          console.error('Error preparing reactions:', err);
+        }
       },
       sendMessage: (generatedMessage: string) => {
         client.sendMessage(message.peerId, {
@@ -136,7 +178,7 @@ const TelegramByUser = function () {
     };
 
 
-    await worker.generateResponse(prompt, actions);
+    await worker.generateResponse(prompt, actions, forceRespond);
 
 
   };

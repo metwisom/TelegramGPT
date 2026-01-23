@@ -5,6 +5,7 @@ type Actions = {
   setUploading: () => void
   markRead: () => void
   sendEmoji: (emoji: string) => void
+  sendReactions: (emojis: string[]) => void
 }
 
 export {Actions};

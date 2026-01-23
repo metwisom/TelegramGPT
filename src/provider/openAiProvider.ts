@@ -3,7 +3,7 @@ import {createContext} from '../worker/openAI/context';
 import type {Message} from '../types/Message.type';
 
 type OpenAIProvider = {
-  chat: (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService?: boolean) => Promise<string>;
+  chat: (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService?: boolean, temperature?: number) => Promise<string>;
   image: (prompt: string) => Promise<string | undefined>;
 };
 
@@ -15,12 +15,14 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
 
   const max_tokens = 9999;
 
-  const chat = async (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService = false) => {
+  const chat = async (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService = false, temperature = 0.7) => {
     const body: Record<string, any> = {
       messages: openAiContext === undefined ? [{role: 'user', content: prompt}] : openAiContext.prepare(prompt, asService),
       max_tokens,
+      temperature,
     };
     const httpResponse = await provider.post('/chat/completions', body);
+    console.log(httpResponse)
     if (!httpResponse || !httpResponse.choices) throw new Error('Invalid response from OpenAI chat endpoint');
     const content = httpResponse.choices[0]?.message?.content as string | undefined;
     return (content ?? '').trim();
