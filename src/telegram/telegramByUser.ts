@@ -26,7 +26,7 @@ const TelegramByUser = function () {
     const message = event.message;
     const prompt = event.message.text;
 
-    if([385988599,7742478721,190670718].indexOf(event.chatId?.valueOf()) === -1){
+    if([190670718].indexOf(event.chatId?.valueOf()) === -1){
       return;
     }
 
