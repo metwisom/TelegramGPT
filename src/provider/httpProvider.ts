@@ -6,7 +6,7 @@ const httpProvider = (host: string, defaultHeader: Record<string, any> = {}) => 
     headers: {
       ...defaultHeader,
     },
-    timeout: 30_000,
+    timeout: 180_000,
   });
 
   const post = async (path: string, data: Record<string, any> = {}, header: Record<string, any> = {}) => {

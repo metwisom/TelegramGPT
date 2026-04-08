@@ -17,6 +17,8 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
 
   const chat = async (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService = false) => {
     const body: Record<string, any> = {
+      model: "glm-5-turbo",
+      temperature: 0.1,
       messages: openAiContext === undefined ? [{role: 'user', content: prompt}] : openAiContext.prepare(prompt, asService),
       max_tokens,
     };

@@ -41,14 +41,15 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
 
   return Object.freeze({
     async generateResponse(prompt: string, actions: Actions, asService: boolean = false) {
+      console.log("Generating response for prompt:", prompt);
       actions.markRead();
-      if (await isImageRequest(prompt, aiProvider)) {
-        await generateImageResponse(prompt, actions, aiProvider);
-      } else {
-        if (await isBotRequest(prompt, aiProvider)) {
+      // if (await isImageRequest(prompt, aiProvider)) {
+      //   await generateImageResponse(prompt, actions, aiProvider);
+      // } else {
+        // if (await isBotRequest(prompt, aiProvider)) {
           await generateChatResponse(prompt, actions, asService);
-        }
-      }
+        // }
+      // }
     }
   });
 }

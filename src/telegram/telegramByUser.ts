@@ -26,7 +26,12 @@ const TelegramByUser = function () {
     const message = event.message;
     const prompt = event.message.text;
 
+    if([385988599,7742478721,190670718].indexOf(event.chatId?.valueOf()) === -1){
+      return;
+    }
+
     if (message.isChannel) {
+      return;
       const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
       const username = chat.username;
       console.log(username);
