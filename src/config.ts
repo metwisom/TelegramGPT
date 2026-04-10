@@ -9,6 +9,11 @@ type Config = {
   tgToken: string | undefined;
   memderHost?: string | undefined;
   memderUploadPath?: string | undefined;
+  dbHost: string;
+  dbPort: number;
+  dbUser: string;
+  dbPassword: string;
+  dbName: string;
 };
 
 const config: Config = {
@@ -20,6 +25,11 @@ const config: Config = {
   tgToken: process.env.TG_TOKEN,
   memderHost: process.env.MEMDER_HOST,
   memderUploadPath: process.env.MEMDER_UPLOAD_PATH ?? '/api/upload',
+  dbHost: process.env.DB_HOST ?? 'localhost',
+  dbPort: Number(process.env.DB_PORT ?? 5432),
+  dbUser: process.env.DB_USER ?? 'postgres',
+  dbPassword: process.env.DB_PASSWORD ?? '',
+  dbName: process.env.DB_NAME ?? 'telegram_person',
 };
 if (process.env.NODE_ENV !== 'test') {
   if (!config.openaiAiKey) {
@@ -39,4 +49,4 @@ if (process.env.NODE_ENV !== 'test') {
   }
 }
 
-export {config, type Config};
+export { config, type Config };

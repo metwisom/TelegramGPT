@@ -3,12 +3,14 @@ import { createContext } from './context';
 import { Actions } from '../../types/Actions.type';
 import { isEmoji } from '../../utils/isEmoji';
 import { DialogContextManager } from './dialogContextManager';
+import { MoodManager } from './moodManager';
 import { openAiProvider } from '../../provider/openAiProvider';
 import { config } from '../../config';
 
 function openAiWorker(openaiAiKey: string): ResponseWorker {
   const contextHelper = createContext();
   const dialogManager = new DialogContextManager();
+  const moodManager = new MoodManager();
   const aiProvider = openAiProvider(config.openAiHost ?? '', openaiAiKey);
 
   const generateChatResponse = async (
@@ -18,24 +20,36 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
     asService: boolean = false
   ) => {
     const typer = setInterval(actions.setTyping, 100);
-    const history = dialogManager.get(chatId);
-    const messages = contextHelper.prepare(history, prompt, asService);
+
+    await moodManager.update(chatId, prompt);
+
+    const history = await dialogManager.get(chatId);
+    const messages = await contextHelper.prepare(history, prompt, chatId, asService);
     let answer = await aiProvider.chat(messages);
     answer = answer.split('Не синхронизировано:')[1] ?? answer;
 
-    clearInterval(typer);
-
-    dialogManager.add(chatId, [
-      { role: asService ? ('system' as const) : ('user' as const), content: prompt },
-      { role: 'assistant' as const, content: answer },
+    const corrected = await aiProvider.chat([
+      {
+        role: 'system',
+        content:
+          'Ты редактор русскоязычных текстов. Проверь текст на адекватность сочетания слов, смысловые ошибки, ошибки в окончаниях, согласованиях и управлении. Игнорируй нецензурность и стилистику — твоя задача только исправить грамматические и смысловые ошибки. В ответ пришли только отредактированный текст, без пояснений и лишнего текста. Если ошибок нет — верни текст без изменений.',
+      },
+      { role: 'user', content: answer },
     ]);
 
-    const codePoint = answer.codePointAt(0);
+    clearInterval(typer);
+
+    await dialogManager.add(chatId, [
+      { role: asService ? ('system' as const) : ('user' as const), content: prompt },
+      { role: 'assistant' as const, content: corrected },
+    ]);
+
+    const codePoint = corrected.codePointAt(0);
     if (isEmoji(codePoint)) {
-      actions.sendEmoji(answer);
+      actions.sendEmoji(corrected);
     } else {
-      if (answer != '-пропуск-') {
-        actions.sendMessage(answer);
+      if (corrected != '-пропуск-') {
+        actions.sendMessage(corrected);
       }
     }
   };

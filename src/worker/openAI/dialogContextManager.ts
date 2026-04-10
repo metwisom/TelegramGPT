@@ -1,60 +1,67 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import { Message } from '../../types/Message.type';
+import { pgProvider } from '../../provider/pgProvider';
 
 const MAX_HISTORY_PER_USER = 60;
 
 class DialogContextManager {
-  private contexts: Map<string, Message[]> = new Map();
-  private dir: string;
+  private initialized = false;
 
-  constructor(storageDir: string = 'contexts') {
-    this.dir = storageDir;
-    if (!fs.existsSync(this.dir)) {
-      fs.mkdirSync(this.dir, { recursive: true });
+  async init(): Promise<void> {
+    if (!this.initialized) {
+      await pgProvider.ensureTable();
+      this.initialized = true;
     }
   }
 
-  private filePath(chatId: number): string {
-    return path.join(this.dir, `${chatId}.json`);
+  async load(chatId: number): Promise<Message[]> {
+    await this.init();
+    const result = await pgProvider
+      .getPool()
+      .query(
+        'SELECT role, content FROM messages WHERE chat_id = $1 ORDER BY created_at ASC LIMIT $2',
+        [chatId, MAX_HISTORY_PER_USER]
+      );
+    return result.rows.map((row: { role: string; content: string }) => ({
+      role: row.role as Message['role'],
+      content: row.content,
+    }));
   }
 
-  load(chatId: number): Message[] {
-    const key = String(chatId);
-    if (this.contexts.has(key)) {
-      return this.contexts.get(key)!;
-    }
-    const file = this.filePath(chatId);
-    if (fs.existsSync(file)) {
-      try {
-        const data = JSON.parse(fs.readFileSync(file, 'utf-8'));
-        this.contexts.set(key, Array.isArray(data) ? data : []);
-      } catch {
-        this.contexts.set(key, []);
+  async add(chatId: number, messages: Message[]): Promise<void> {
+    await this.init();
+    const pool = pgProvider.getPool();
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const msg of messages) {
+        await client.query('INSERT INTO messages (chat_id, role, content) VALUES ($1, $2, $3)', [
+          chatId,
+          msg.role,
+          msg.content,
+        ]);
       }
-    } else {
-      this.contexts.set(key, []);
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
-    return this.contexts.get(key)!;
+
+    await this.trimHistory(chatId);
   }
 
-  add(chatId: number, messages: Message[]): void {
-    const history = this.load(chatId);
-    history.push(...messages);
-    if (history.length > MAX_HISTORY_PER_USER) {
-      this.contexts.set(String(chatId), history.slice(-MAX_HISTORY_PER_USER));
-    }
-    this.save(chatId);
-  }
-
-  get(chatId: number): Message[] {
+  async get(chatId: number): Promise<Message[]> {
     return this.load(chatId);
   }
 
-  private save(chatId: number): void {
-    const file = this.filePath(chatId);
-    const history = this.contexts.get(String(chatId)) ?? [];
-    fs.writeFileSync(file, JSON.stringify(history, null, 2), 'utf-8');
+  private async trimHistory(chatId: number): Promise<void> {
+    await pgProvider.getPool().query(
+      `DELETE FROM messages WHERE chat_id = $1 AND id NOT IN (
+        SELECT id FROM messages WHERE chat_id = $1 ORDER BY created_at DESC LIMIT $2
+      )`,
+      [chatId, MAX_HISTORY_PER_USER]
+    );
   }
 }
 
