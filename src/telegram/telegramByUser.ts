@@ -1,17 +1,15 @@
-import {Api, TelegramClient, utils} from "telegram";
-import {StringSession} from "telegram/sessions";
-import {NewMessage, NewMessageEvent} from "telegram/events";
-import promptSync from "prompt-sync";
-import {ResponseWorker} from "../types/ResponseWorker.type";
-import {config} from "../config";
-import fs from "node:fs";
-import {CustomFile} from "telegram/client/uploads";
-import {fileProvider} from "../provider/fileProvider";
-import {uploadFile} from "../uploadMemder";
-
+import { Api, TelegramClient, utils } from 'telegram';
+import { StringSession } from 'telegram/sessions';
+import { NewMessage, NewMessageEvent } from 'telegram/events';
+import promptSync from 'prompt-sync';
+import { ResponseWorker } from '../types/ResponseWorker.type';
+import { config } from '../config';
+import fs from 'node:fs';
+import { CustomFile } from 'telegram/client/uploads';
+import { fileProvider } from '../provider/fileProvider';
+import { uploadFile } from '../uploadMemder';
 
 const prompt = promptSync();
-
 
 const TelegramByUser = function () {
   const apiId = config.apiId;
@@ -21,22 +19,21 @@ const TelegramByUser = function () {
   let client: TelegramClient;
   let worker: ResponseWorker;
 
-
   const sendAnswer = async (event: NewMessageEvent) => {
     const message = event.message;
     const prompt = event.message.text;
 
-    if([190670718,85494353,324214202].indexOf(event.chatId?.valueOf()) === -1){
+    if ([190670718, 85494353, 324214202].indexOf(event.chatId?.valueOf()) === -1) {
       return;
     }
 
     if (message.isChannel) {
       return;
-      const chat = await client.getEntity(event.chatId || event.message.peerId) as Api.Channel;
+      const chat = (await client.getEntity(event.chatId || event.message.peerId)) as Api.Channel;
       const username = chat.username;
       console.log(username);
       if (message.media && utils.isImage(message.media)) {
-        const fileName = "test" + Math.random() + ".jpg";
+        const fileName = 'test' + Math.random() + '.jpg';
         await client.downloadMedia(message.media, {
           outputFile: fileName,
         });
@@ -48,16 +45,15 @@ const TelegramByUser = function () {
       }
     }
 
-
     console.log(message.text);
     if (message.isPrivate) {
       const sender = (await event.message.getSender()) as Api.User;
       let result = await client.invoke(
         new Api.contacts.AddContact({
           id: sender.username,
-          firstName: sender.firstName ?? "",
-          lastName: sender.lastName ?? "",
-          phone: sender.phone ?? "",
+          firstName: sender.firstName ?? '',
+          lastName: sender.lastName ?? '',
+          phone: sender.phone ?? '',
           addPhonePrivacyException: false,
         })
       );
@@ -68,40 +64,34 @@ const TelegramByUser = function () {
       sendImage: async (url: string) => {
         fileProvider()
           .saveFile(url)
-          .then(async path => {
+          .then(async (path) => {
             const result = client.invoke(
               new Api.messages.SendMedia({
                 peer: Number(message.chatId),
                 media: new Api.InputMediaUploadedPhoto({
                   file: await client.uploadFile({
-                    file: new CustomFile(
-                      path,
-                      fs.statSync(path).size,
-                      path
-                    ),
+                    file: new CustomFile(path, fs.statSync(path).size, path),
                     workers: 1,
                   }),
                 }),
-                message: "",
+                message: '',
               })
             );
             // console.log(result);
           });
-
-
       },
       sendEmoji: (emoji: string) => {
         client.invoke(
           new Api.messages.SendReaction({
             peer: Number(message.chatId),
             msgId: Number(message.id),
-            reaction: [new Api.ReactionEmoji({emoticon: emoji})],
+            reaction: [new Api.ReactionEmoji({ emoticon: emoji })],
           })
         );
       },
       sendMessage: (generatedMessage: string) => {
         client.sendMessage(message.peerId, {
-          message: generatedMessage
+          message: generatedMessage,
         });
       },
       setUploading: () => {
@@ -109,7 +99,7 @@ const TelegramByUser = function () {
         client.invoke(
           new Api.messages.SetTyping({
             peer,
-            action: new Api.SendMessageUploadPhotoAction({progress: 1}),
+            action: new Api.SendMessageUploadPhotoAction({ progress: 1 }),
             topMsgId: 43,
           })
         );
@@ -136,14 +126,11 @@ const TelegramByUser = function () {
             maxId,
           })
         );
-
-      }
+      },
     };
 
-
-    await worker.generateResponse(prompt, actions);
-
-
+    const chatId = Number(message.chatId);
+    await worker.generateResponse(prompt, actions, chatId);
   };
   return Object.freeze({
     setWorker(newWorker: ResponseWorker) {
@@ -151,11 +138,11 @@ const TelegramByUser = function () {
       return this;
     },
     async start() {
-      client = new TelegramClient(session, apiId, apiHash, {connectionRetries: 5});
+      client = new TelegramClient(session, apiId, apiHash, { connectionRetries: 5 });
       await client.start({
-        phoneNumber: async () => prompt("Введите ваш номер телефона: "),
-        password: async () => prompt("Введите ваш пароль (если требуется): "),
-        phoneCode: async () => prompt("Введите код из TelegramByUser: "),
+        phoneNumber: async () => prompt('Введите ваш номер телефона: '),
+        password: async () => prompt('Введите ваш пароль (если требуется): '),
+        phoneCode: async () => prompt('Введите код из TelegramByUser: '),
         onError: (err) => console.log(err),
       });
 
@@ -167,4 +154,4 @@ const TelegramByUser = function () {
   });
 };
 
-export {TelegramByUser};
+export { TelegramByUser };

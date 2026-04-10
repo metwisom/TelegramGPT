@@ -3,6 +3,7 @@ dist/
 .env
 *.log
 output.json
+contexts/
 /.vscode/
 # Based on https://raw.githubusercontent.com/github/gitignore/main/Node.gitignore
 

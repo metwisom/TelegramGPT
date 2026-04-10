@@ -1,9 +1,8 @@
-import {httpProvider} from './httpProvider';
-import {createContext} from '../worker/openAI/context';
-import type {Message} from '../types/Message.type';
+import { httpProvider } from './httpProvider';
+import type { Message } from '../types/Message.type';
 
 type OpenAIProvider = {
-  chat: (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService?: boolean) => Promise<string>;
+  chat: (messages: Message[]) => Promise<string>;
   image: (prompt: string) => Promise<string | undefined>;
 };
 
@@ -15,15 +14,16 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
 
   const max_tokens = 9999;
 
-  const chat = async (prompt: string, openAiContext?: ReturnType<typeof createContext>, asService = false) => {
+  const chat = async (messages: Message[]) => {
     const body: Record<string, any> = {
-      model: "glm-5-turbo",
+      model: 'glm-5-turbo',
       temperature: 0.1,
-      messages: openAiContext === undefined ? [{role: 'user', content: prompt}] : openAiContext.prepare(prompt, asService),
+      messages,
       max_tokens,
     };
     const httpResponse = await provider.post('/chat/completions', body);
-    if (!httpResponse || !httpResponse.choices) throw new Error('Invalid response from OpenAI chat endpoint');
+    if (!httpResponse || !httpResponse.choices)
+      throw new Error('Invalid response from OpenAI chat endpoint');
     const content = httpResponse.choices[0]?.message?.content as string | undefined;
     return (content ?? '').trim();
   };
@@ -43,7 +43,7 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
     return httpResponse.data?.[0]?.url;
   };
 
-  return Object.freeze({chat, image});
+  return Object.freeze({ chat, image });
 };
 
-export {openAiProvider};
+export { openAiProvider };
