@@ -1,7 +1,7 @@
 import { Message } from '../../types/Message.type';
 import { pgProvider } from '../../provider/pgProvider';
 
-const MAX_HISTORY_PER_USER = 60;
+const MAX_HISTORY_PER_USER = 10;
 
 class DialogContextManager {
   private initialized = false;

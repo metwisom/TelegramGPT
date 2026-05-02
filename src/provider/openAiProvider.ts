@@ -16,14 +16,15 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
 
   const chat = async (messages: Message[]) => {
     const body: Record<string, any> = {
-      model: 'glm-5-turbo',
+      model: 'gpt-oss',
       temperature: 0.1,
       messages,
-      max_tokens,
     };
     const httpResponse = await provider.post('/chat/completions', body);
-    if (!httpResponse || !httpResponse.choices)
+    if (!httpResponse || !httpResponse.choices){
+      console.log(httpResponse)
       throw new Error('Invalid response from OpenAI chat endpoint');
+    }
     const content = httpResponse.choices[0]?.message?.content as string | undefined;
     return (content ?? '').trim();
   };

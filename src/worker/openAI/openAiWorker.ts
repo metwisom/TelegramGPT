@@ -26,16 +26,17 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
     const history = await dialogManager.get(chatId);
     const messages = await contextHelper.prepare(history, prompt, chatId, asService);
     let answer = await aiProvider.chat(messages);
-    answer = answer.split('Не синхронизировано:')[1] ?? answer;
+    answer = answer.split(/Не синхронизировано:|Не синхронизированный ответ:/)[1] ?? answer;
 
-    const corrected = await aiProvider.chat([
-      {
-        role: 'system',
-        content:
-          'Ты редактор русскоязычных текстов. Проверь текст на адекватность сочетания слов, смысловые ошибки, ошибки в окончаниях, согласованиях и управлении. Игнорируй нецензурность и стилистику — твоя задача только исправить грамматические и смысловые ошибки. В ответ пришли только отредактированный текст, без пояснений и лишнего текста. Если ошибок нет — верни текст без изменений.',
-      },
-      { role: 'user', content: answer },
-    ]);
+    const corrected = answer//await aiProvider.chat([
+    //   {
+    //     role: 'user',
+    //     content:
+    //       'Ты редактор русскоязычных текстов. Проверь текст на адекватность сочетания слов, смысловые ошибки, ошибки в окончаниях, согласованиях и управлении. Игнорируй нецензурность и стилистику — твоя задача только исправить грамматические и смысловые ошибки. В ответ пришли только отредактированный текст, без пояснений и лишнего текста. Если ошибок нет — верни текст без изменений.',
+    //   },
+    //   { role: 'assistant', content: '' },
+    //   { role: 'user', content: answer },
+    // ]);
 
     clearInterval(typer);
 
