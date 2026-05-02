@@ -20,11 +20,15 @@ const fix = (history: Message[]): Message[] => {
     result.push(message);
   }
 
-  if (result.length > 0 && result[0].role !== 'assistant') {
+  if (result.length === 0) {
+    result.push({ role: 'assistant', content: '' });
+  }
+
+  if (result[0].role !== 'assistant') {
     result.unshift({ role: 'assistant', content: '' });
   }
 
-  if (result.length > 0 && result[result.length - 1].role !== 'assistant') {
+  if (result[result.length - 1].role !== 'assistant') {
     result.push({ role: 'assistant', content: '' });
   }
 
