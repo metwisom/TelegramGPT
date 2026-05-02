@@ -26,7 +26,7 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
     const history = await dialogManager.get(chatId);
     const messages = await contextHelper.prepare(history, prompt, chatId, asService);
     let answer = await aiProvider.chat(messages);
-    answer = answer.split(/Не синхронизировано:|Не синхронизированный ответ:/)[1] ?? answer;
+    answer = answer.split(/Не синхронизированный:|Не синхронизировано:|Не синхронизированный ответ:/)[1] ?? answer;
 
     const corrected = answer//await aiProvider.chat([
     //   {
