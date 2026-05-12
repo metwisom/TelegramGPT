@@ -16,7 +16,6 @@ const openAiProvider = (host: string, openaiAiKey: string): OpenAIProvider => {
 
   const chat = async (messages: Message[]) => {
     const body: Record<string, any> = {
-      model: 'gpt-oss',
       temperature: 0.1,
       messages,
     };
