@@ -59,7 +59,7 @@ function openAiWorker(openaiAiKey: string): ResponseWorker {
     async generateResponse(prompt: string, actions: Actions, chatId: number) {
       console.log('Generating response for prompt:', prompt, 'chatId:', chatId);
       actions.markRead();
-      actions.sendEmoji('🤡');
+      actions.sendEmoji('\u{1F921}');
     },
   });
 }
